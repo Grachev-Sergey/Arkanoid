@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Arkanoid</title>
+</head>
+<body>
+  <section class="options-and-rules container hide">
+    <div class="rules">
+      <h1 class="rules__header header">Rules:</h1>
+      <ol class="rules__text">
+        <li>Set the number of health points and the level at which the complication will begin.</li>
+        <li>Some bricks need to be attacked multiple times before they are destroyed.</li>
+        <li>The platform is controlled by arrows on the keyboard. Press the space bar to make the ball move</li>
+      </ol>
+    </div>
+    <div class="options-and-rules__options">
+      <h2 class="options__header header">Options:</h2>
+      <div class="options">
+        <div class="options-health">
+          <p class="options-health__text">Health points</p>
+          <input class="options-health__number options-input" type="number" value="3" min="1" max="5">
+        </div>
+        <div class="options-level">
+          <p class="options-level__text">Level complication</p>
+          <input class="options-level__number options-input" type="number" value="3" min="1" max="10">
+        </div>
+      </div>
+    </div>
+    <button class="options-and-rules__button button">start game</button>
+  </section>
+  <section class="game">
+    <div class="skore-and-heals">
+      <p class="score-and-health__info">Skore: <span class="score"></span></p>
+      <p class="score-and-health__info">Heals: <span class="heals"></span></p>
+      <p class="score-and-health__info">Level: <span class="level"></span></p>
+    </div>
+    <div class="game-block">
+      <div class="ball"></div>
+      <div class="leftWall"></div>
+      <div class="topWall"></div>
+      <div class="rightWall"></div>
+      <div class="platform"></div>
+      <div class="blocks"></div>
+    </div>
+  </section>
+  <section class="restart container hide">
+    <div class="result">
+      <p class="completed-levels">Completed levels: <span class="number-of-levels"></span></p>
+      <p class="points-earned">Points earned: <span class="number-of-points"></span></p>
+    </div>
+    <button class="restart__button button">restart game</button>
+  </section>
+
+  <script src="/index.js"></script>
+</body>
+</html>
