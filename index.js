@@ -1,3 +1,6 @@
+const health = document.querySelector('.health');
+
+
 const leftWall = document.querySelector('.leftWall').getBoundingClientRect().width; 
 const topWall = document.querySelector('.topWall').getBoundingClientRect().height; 
 const rightWall = document.querySelector('.topWall').getBoundingClientRect().width; 
@@ -14,7 +17,10 @@ const ballInfo = ball.getBoundingClientRect()
 document.addEventListener('keydown', startGame); 
 document.addEventListener('keydown', movePlatformWidhtBall); 
 
-let idBlocks = [];
+let healthPoint = 2;
+
+health.innerHTML = `Health: ${healthPoint}`
+
 
 let intervalMove;
 
@@ -22,8 +28,9 @@ let vx = 5, vy = -5;
 
 const ballDiameter = ballInfo.height;
 
-let posX = ballInfo.left - ballDiameter/2;
+let posX = ballInfo.left + ballDiameter/2;
 let posY = ballInfo.top - ballDiameter/2;
+console.log (posX, posY)
 
 const platformWidth = platformInfo.width;
 const platformHeight = platformInfo.height; 
@@ -36,15 +43,14 @@ const vPlatform = 10;
 
 const createBlocks = (i, j, color, id) => {
   return `
-    <div class="block-row-${i} block-column-${j} block-${color} block" id="${id}"></div>
+    <div class="block-row-${i} block-column-${j} block-${color} block"></div>
   `
 };
 
 for (let i = 1; i < 21; i++) {
   for (let j = 1; j < 6; j++) {
     let color = randomColor(1, 4);
-    let id = randomId(1, 99999)
-    blocks.innerHTML += createBlocks(i, j, color, id);
+    blocks.innerHTML += createBlocks(i, j, color);
   }
 };
 
@@ -58,17 +64,11 @@ function randomColor (min, max) {
   };
 };
 
-function randomId (min, max) {
-  return Math.floor(Math.random()*(max - min)+min)
-}
-
 const block = document.querySelectorAll('.block');
 
 
 
-
-
-// запуск игры и ее функционал
+// запуск игры, функционал движения мяча и платформы
 
 function startGame (event) {
   if (event.keyCode === 32) {
@@ -116,10 +116,29 @@ function movePlatformWidhtBall(event) {
   ball.style.left = posX + 'px';
 };
 
+// механика перемещения шара в пространстве и контакта соприкосновения с границами и блоками
 
 function moveBall () { 
   posX += vx // тут нужно допилить случайное присвоение начального вектора направления движения + либо -
   posY += vy;
+
+  Object.values(block).map((elem) => {
+
+    if (posX > elem.getBoundingClientRect().left && posX < elem.getBoundingClientRect().left + elem.getBoundingClientRect().width && posY - ballDiameter/2 < elem.getBoundingClientRect().top) {
+      if(elem.classList.contains('block-red')) {
+        elem.classList.remove('block-red');
+        elem.classList.add('block-green');
+      } else if (elem.classList.contains('block-green')) {
+        elem.classList.remove('block-green');
+        elem.classList.add('block-blue');
+      } else {
+        elem.classList.add('hide');
+      }
+      elem.classList.add('hide')
+      vy = -vy
+    };
+    // нужно добавить условие, для касаний по правому и левому раю блока.
+  });
 
   if (posX < leftWall) {
     posX = leftWall;
@@ -143,18 +162,16 @@ function moveBall () {
   ball.style.left = posX + 'px';
 
   if (posY + ballDiameter > bottomWall) {
-    clearInterval(intervalMove);
-    document.removeEventListener('keydown', movePlatform);
-    console.log('game over');
+    if (healthPoint === 1){
+      clearInterval(intervalMove);
+      document.removeEventListener('keydown', movePlatform);
+      console.log('game over');
+    } else {
+      healthPoint -= 1;
+      vy = -vy;
+      health.innerHTML = `Health: ${healthPoint}`
+    }
   };
 };
-
-// выбор конкретного блока
-
-    
-Object.values(block).map((elem) => {
-  console.log(elem.getBoundingClientRect().left, elem.getBoundingClientRect().top, elem.id)
-})
-
 
 
