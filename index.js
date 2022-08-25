@@ -1,4 +1,6 @@
 const health = document.querySelector('.health');
+const levelNumber = document.querySelector('.level');
+const scoreNumber = document.querySelector('.score');
 
 
 const leftWall = document.querySelector('.leftWall').getBoundingClientRect().width; 
@@ -17,10 +19,15 @@ const ballInfo = ball.getBoundingClientRect()
 document.addEventListener('keydown', startGame); 
 document.addEventListener('keydown', movePlatformWidhtBall); 
 
+
 let healthPoint = 2;
+health.innerHTML = `Health: ${healthPoint}`;
 
-health.innerHTML = `Health: ${healthPoint}`
+let level = 1;
+levelNumber.innerHTML = `Level: ${level}`;
 
+let score = 0;
+scoreNumber.innerHTML = `Score: ${score}`;
 
 let intervalMove;
 
@@ -30,7 +37,6 @@ const ballDiameter = ballInfo.height;
 
 let posX = ballInfo.left + ballDiameter/2;
 let posY = ballInfo.top - ballDiameter/2;
-console.log (posX, posY)
 
 const platformWidth = platformInfo.width;
 const platformHeight = platformInfo.height; 
@@ -40,33 +46,33 @@ const vPlatform = 10;
 
 
 // создание группы блоков внутри тега blocks
-
-const createBlocks = (i, j, color, id) => {
-  return `
-    <div class="block-row-${i} block-column-${j} block-${color} block"></div>
-  `
-};
-
-for (let i = 1; i < 21; i++) {
-  for (let j = 1; j < 6; j++) {
-    let color = randomColor(1, 4);
-    blocks.innerHTML += createBlocks(i, j, color);
-  }
-};
-
-function randomColor (min, max) {
-  if (Math.floor(Math.random()*(max - min)+min) === 1) {
-    return 'blue';
-  } else if (Math.floor(Math.random()*(max - min)+min) === 2) {
-    return 'green';
-  } else {
-    return 'red';
+function renderBlocks () {
+  const createBlocks = (i, j, color, id) => {
+    return `
+      <div class="block-row-${i} block-column-${j} block-${color} block"></div>
+    `
+  };
+  
+  for (let i = 1; i < 21; i++) {
+    for (let j = 1; j < 6; j++) {
+      let color = randomColor(1, 4);
+      blocks.innerHTML += createBlocks(i, j, color);
+    }
+  };
+  
+  function randomColor (min, max) {
+    if (Math.floor(Math.random()*(max - min)+min) === 1) {
+      return 'blue';
+    } else if (Math.floor(Math.random()*(max - min)+min) === 2) {
+      return 'green';
+    } else {
+      return 'red';
+    };
   };
 };
+renderBlocks()
 
-const block = document.querySelectorAll('.block');
-
-
+let block = document.querySelectorAll('.block');
 
 // запуск игры, функционал движения мяча и платформы
 
@@ -76,6 +82,9 @@ function startGame (event) {
   document.removeEventListener('keydown', startGame);
   document.removeEventListener('keydown', movePlatformWidhtBall);
   document.addEventListener('keydown', movePlatform);
+    if (level >= 5) {
+      console.log('тут должны добавиться мины')
+    }
   };
 };
 
@@ -121,24 +130,31 @@ function movePlatformWidhtBall(event) {
 function moveBall () { 
   posX += vx // тут нужно допилить случайное присвоение начального вектора направления движения + либо -
   posY += vy;
-
-  Object.values(block).map((elem) => {
-
-    if (posX > elem.getBoundingClientRect().left && posX < elem.getBoundingClientRect().left + elem.getBoundingClientRect().width && posY - ballDiameter/2 < elem.getBoundingClientRect().top) {
-      if(elem.classList.contains('block-red')) {
-        elem.classList.remove('block-red');
-        elem.classList.add('block-green');
-      } else if (elem.classList.contains('block-green')) {
-        elem.classList.remove('block-green');
-        elem.classList.add('block-blue');
-      } else {
-        elem.classList.add('hide');
-      }
-      elem.classList.add('hide')
-      vy = -vy
-    };
-    // нужно добавить условие, для касаний по правому и левому раю блока.
-  });
+  
+  function removeBlock() {
+    Object.values(block).map((elem) => {
+      if (posX > elem.getBoundingClientRect().left && posX < elem.getBoundingClientRect().left + elem.getBoundingClientRect().width && posY - ballDiameter/2 < elem.getBoundingClientRect().top) {
+        if(elem.classList.contains('block-red')) {
+          elem.classList.remove('block-red');
+          elem.classList.add('block-green');
+          score +=1;
+          scoreNumber.innerHTML = `Score: ${score}`;
+        } else if (elem.classList.contains('block-green')) {
+          elem.classList.remove('block-green');
+          elem.classList.add('block-blue');
+          score +=1;
+          scoreNumber.innerHTML = `Score: ${score}`;
+        } else {
+          elem.remove()
+          score +=1;
+          scoreNumber.innerHTML = `Score: ${score}`;
+        }
+        vy = -vy
+      };
+      // нужно добавить условие, для касаний по правому и левому раю блока.
+    });
+  };
+  removeBlock();
 
   if (posX < leftWall) {
     posX = leftWall;
@@ -153,7 +169,7 @@ function moveBall () {
     vx = -vx;
   };
   if (posY > bottomWall - platformHeight - ballDiameter) {
-    if (posX >= platformPosX&& posX <= platformPosX + platformInfo.width) {
+    if (posX >= platformPosX && posX <= platformPosX + platformInfo.width) {
       posY = bottomWall - platformHeight - ballDiameter;
       vy = -vy;
     };
@@ -161,17 +177,41 @@ function moveBall () {
   ball.style.top = posY + 'px';
   ball.style.left = posX + 'px';
 
+  // при попадании мяча в запретную зону, убрать HP или закончить игру.
+
   if (posY + ballDiameter > bottomWall) {
     if (healthPoint === 1){
       clearInterval(intervalMove);
       document.removeEventListener('keydown', movePlatform);
       console.log('game over');
     } else {
+      stopGame()
       healthPoint -= 1;
-      vy = -vy;
       health.innerHTML = `Health: ${healthPoint}`
-    }
+    };
+  };
+
+  // если закончились блоки создать новую группу блоков и добавить значение уровня 
+
+  if (!blocks.children.length) {
+    stopGame();
+    level += 1;
+    levelNumber.innerHTML = `Level: ${level}`;
+    renderBlocks();
+    block = document.querySelectorAll('.block');
+    removeBlock();
   };
 };
 
+// остановка игры 
 
+function stopGame () {
+  clearInterval(intervalMove);
+  document.addEventListener('keydown', startGame);
+  document.addEventListener('keydown', movePlatformWidhtBall);
+  document.removeEventListener('keydown', movePlatform);
+  posX = platformPosX + platformWidth/2;
+  posY = bottomWall - platformHeight - ballDiameter; 
+  ball.style.top = posY + 'px';
+  ball.style.left = posX + 'px';
+};
