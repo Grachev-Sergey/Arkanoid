@@ -2,7 +2,6 @@ const health = document.querySelector('.health');
 const levelNumber = document.querySelector('.level');
 const scoreNumber = document.querySelector('.score');
 
-
 const leftWall = document.querySelector('.leftWall').getBoundingClientRect().width; 
 const topWall = document.querySelector('.topWall').getBoundingClientRect().height; 
 const rightWall = document.querySelector('.topWall').getBoundingClientRect().width; 
@@ -14,16 +13,15 @@ const platform = document.querySelector('.platform');
 const platformInfo = platform.getBoundingClientRect();
 
 const ball = document.querySelector('.ball');
-const ballInfo = ball.getBoundingClientRect()
+const ballInfo = ball.getBoundingClientRect();
 
 document.addEventListener('keydown', startGame); 
 document.addEventListener('keydown', movePlatformWidhtBall); 
 
-
 let healthPoint = 2;
 health.innerHTML = `Health: ${healthPoint}`;
 
-let level = 1;
+let level = 5;
 levelNumber.innerHTML = `Level: ${level}`;
 
 let score = 0;
@@ -43,9 +41,8 @@ const platformHeight = platformInfo.height;
 let platformPosX = platformInfo.left; 
 const vPlatform = 10;
 
-
-
 // создание группы блоков внутри тега blocks
+
 function renderBlocks () {
   const createBlocks = (i, j, color, id) => {
     return `
@@ -57,7 +54,7 @@ function renderBlocks () {
     for (let j = 1; j < 6; j++) {
       let color = randomColor(1, 4);
       blocks.innerHTML += createBlocks(i, j, color);
-    }
+    };
   };
   
   function randomColor (min, max) {
@@ -70,7 +67,7 @@ function renderBlocks () {
     };
   };
 };
-renderBlocks()
+renderBlocks();
 
 let block = document.querySelectorAll('.block');
 
@@ -78,13 +75,13 @@ let block = document.querySelectorAll('.block');
 
 function startGame (event) {
   if (event.keyCode === 32) {
-  intervalMove = setInterval(moveBall, 1000/40);
-  document.removeEventListener('keydown', startGame);
-  document.removeEventListener('keydown', movePlatformWidhtBall);
-  document.addEventListener('keydown', movePlatform);
+    intervalMove = setInterval(moveBall, 1000/40);
+    document.removeEventListener('keydown', startGame);
+    document.removeEventListener('keydown', movePlatformWidhtBall);
+    document.addEventListener('keydown', movePlatform);
     if (level >= 5) {
-      console.log('тут должны добавиться мины')
-    }
+      fallShells();
+    };
   };
 };
 
@@ -145,11 +142,11 @@ function moveBall () {
           score +=1;
           scoreNumber.innerHTML = `Score: ${score}`;
         } else {
-          elem.remove()
+          elem.remove();
           score +=1;
           scoreNumber.innerHTML = `Score: ${score}`;
         }
-        vy = -vy
+        vy = -vy;
       };
       // нужно добавить условие, для касаний по правому и левому раю блока.
     });
@@ -180,15 +177,7 @@ function moveBall () {
   // при попадании мяча в запретную зону, убрать HP или закончить игру.
 
   if (posY + ballDiameter > bottomWall) {
-    if (healthPoint === 1){
-      clearInterval(intervalMove);
-      document.removeEventListener('keydown', movePlatform);
-      console.log('game over');
-    } else {
-      stopGame()
-      healthPoint -= 1;
-      health.innerHTML = `Health: ${healthPoint}`
-    };
+    death();
   };
 
   // если закончились блоки создать новую группу блоков и добавить значение уровня 
@@ -203,10 +192,59 @@ function moveBall () {
   };
 };
 
+// запуск снарядов
+
+let intervalGenerateShells;
+
+function fallShells() {
+
+  intervalGenerateShells  = setInterval(generateShells, 3000);
+
+  const shellsblock = document.querySelector('.shells-block');
+
+  let shells;
+  let shellsY;
+  let shellsX;
+  let shellsHeight;
+  let shellsWidth;
+  const vShellsY = 5;
+
+  function generateShells() {
+    let shellRandomPosishon = shellPosishon(5, 95);
+    shellsblock.innerHTML += `<div class = "shells" style = "left: ${shellRandomPosishon}%"></div>`;
+    function shellPosishon (min, max) {
+      return Math.floor(Math.random()*(max - min)+min);
+    };
+    shells = shellsblock.querySelector('.shells');
+    shellsY = shells.getBoundingClientRect().top;
+    shellsX = shells.getBoundingClientRect().left;
+    shellsHeight = shells.getBoundingClientRect().height;
+    shellsWidth = shells.getBoundingClientRect().width;
+  };
+  
+  const intervalShellsMove = setInterval(shellsMove, 1000/50);
+  function shellsMove() {
+    shellsY += vShellsY;
+    if (shells) {
+      shells.style.top = shellsY + 'px';
+    };
+    if (shellsY + shellsHeight > bottomWall) {
+      shells.remove();
+    };
+    if (shellsY + shellsHeight > bottomWall - platformHeight && shellsX > platformPosX && shellsX + shellsWidth < platformPosX + platformWidth) {
+      shellsX = 0;
+      shellsY = 0;
+      shells.remove();
+      death();
+    }
+  };
+};
+
 // остановка игры 
 
 function stopGame () {
   clearInterval(intervalMove);
+  clearInterval(intervalGenerateShells);
   document.addEventListener('keydown', startGame);
   document.addEventListener('keydown', movePlatformWidhtBall);
   document.removeEventListener('keydown', movePlatform);
@@ -214,4 +252,19 @@ function stopGame () {
   posY = bottomWall - platformHeight - ballDiameter; 
   ball.style.top = posY + 'px';
   ball.style.left = posX + 'px';
+};
+
+// попадание мяча за поле и попадание снаряда по платформе
+
+function death () {
+  if (healthPoint === 1){
+    clearInterval(intervalMove);
+    clearInterval(intervalGenerateShells);
+    document.removeEventListener('keydown', movePlatform);
+    console.log('game over');
+  } else {
+    stopGame();
+    healthPoint -= 1;
+    health.innerHTML = `Health: ${healthPoint}`;
+  };
 };

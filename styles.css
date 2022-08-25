@@ -129,6 +129,20 @@ li {
   background-color: brown;
 }
 
+.shells-block {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.shells {
+  position: absolute;
+  height: 40px;
+  width: 20px;
+  border-radius: 15px;
+  background-color: yellow;
+}
+
 .ball {
   position: absolute;
   top: 95%;
