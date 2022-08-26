@@ -57,9 +57,11 @@ function createGameBlock() {
   let vx = 5, vy = -5;
   
   const ballDiameter = ballInfo.height;
-  
-  let posX = ballInfo.left + ballDiameter/2;
-  let posY = ballInfo.top - ballDiameter/2;
+
+  let posX = ballInfo.left + ballDiameter/2; // позиция по x - центр шара
+  let posY = ballInfo.top; // позиция по Y - верх шара
+  let ballBottomSide = posY + ballInfo.height;
+
   
   const platformWidth = platformInfo.width;
   const platformHeight = platformInfo.height; 
@@ -93,7 +95,7 @@ function createGameBlock() {
     };
   };
   renderBlocks();
-  
+    
   let block = document.querySelectorAll('.block');
   
   // запуск игры, функционал движения мяча и платформы
@@ -153,31 +155,33 @@ function createGameBlock() {
     posX += vx; // тут нужно допилить случайное присвоение начального вектора направления движения + либо - при первом запуске(попробывать сделать это в ф-ии старт)
     posY += vy;
     
-    function removeBlock() {
+    function contactWithBlock() {
       Object.values(block).map((elem) => {
-        if (posX > elem.getBoundingClientRect().left && posX < elem.getBoundingClientRect().left + elem.getBoundingClientRect().width && posY - ballDiameter/2 < elem.getBoundingClientRect().top) {
-          if(elem.classList.contains('block-red')) {
-            elem.classList.remove('block-red');
-            elem.classList.add('block-green');
-            score +=1;
-            scoreNumber.innerHTML = `Score: ${score}`;
-          } else if (elem.classList.contains('block-green')) {
-            elem.classList.remove('block-green');
-            elem.classList.add('block-blue');
-            score +=1;
-            scoreNumber.innerHTML = `Score: ${score}`;
-          } else {
-            elem.remove();
-            score +=1;
-            scoreNumber.innerHTML = `Score: ${score}`;
-          };
+        let elemTop = elem.getBoundingClientRect().top;
+        let elemBottom = elem.getBoundingClientRect().top + elem.getBoundingClientRect().height;
+        let elemLeft = elem.getBoundingClientRect().left;
+        let elemRight = elem.getBoundingClientRect().left + elem.getBoundingClientRect().width;
+
+
+        if (posY + ballDiameter/4 < elemBottom && posX > elemLeft && posX < elemRight) {
+          removeBlock(elem);
           vy = -vy;
         };
-        // нужно добавить условие, для касаний по правому и левому раю блока.
-        // как вариант можно разбить на 4 условия, каждое со своими границами.
+        if (posX + ballDiameter > elemLeft && posX < elemRight && posY + ballDiameter/2  > elemTop && posY + ballDiameter/2 < elemBottom) {
+          removeBlock(elem);
+          vx = -vx;
+        };
+        if (posX - ballDiameter/2 < elemRight && posX > elemLeft && posY + ballDiameter/2 > elemTop && posY + ballDiameter/2 < elemBottom) {
+          removeBlock(elem);
+          vx = -vx;
+        };
+         if (ballBottomSide > elemTop && ballBottomSide < elemBottom && posX > elemLeft && posX < elemRight) {
+          removeBlock(elem);
+          vy = -vy;
+        };
       });
     };
-    removeBlock();
+    contactWithBlock();
 
     //взаимодействие со стенами и платформой
 
@@ -216,10 +220,28 @@ function createGameBlock() {
       levelNumber.innerHTML = `Level: ${level}`;
       renderBlocks();
       block = document.querySelectorAll('.block');
-      removeBlock();
+      contactWithBlock();
     };
   };
   
+  function removeBlock(elem) {
+    if(elem.classList.contains('block-red')) {
+      elem.classList.remove('block-red');
+      elem.classList.add('block-green');
+      score +=1;
+      scoreNumber.innerHTML = `Score: ${score}`;
+    } else if (elem.classList.contains('block-green')) {
+      elem.classList.remove('block-green');
+      elem.classList.add('block-blue');
+      score +=1;
+      scoreNumber.innerHTML = `Score: ${score}`;
+    } else {
+      elem.remove();
+      score +=1;
+      scoreNumber.innerHTML = `Score: ${score}`;
+    };
+  };
+
   // запуск снарядов
   
   let intervalGenerateShells;
@@ -301,6 +323,8 @@ function createGameBlock() {
   // окончание игры и вывод результатов
 
   function gameOver() {
+    ball.style.top = bottomWall - platformHeight - ballDiameter + 'px';
+    ball.style.left = platformPosX + 'px';
     clearInterval(intervalMove);
     clearInterval(intervalGenerateShells);
     document.removeEventListener('keydown', movePlatform);
@@ -316,8 +340,5 @@ function createGameBlock() {
 // кнопка перезапуска игры
 
 restartButton.addEventListener('click', () => {
-  game.classList.remove('hide');
-  restart.classList.add('hide');
-  score = 0;
-  createGameBlock();
+  location.reload()
 });
