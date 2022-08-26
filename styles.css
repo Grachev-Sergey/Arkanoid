@@ -264,3 +264,8 @@ li {
 .block-blue {
   background-color: blue;
 }
+
+.game-over {
+  margin-top: 40px;
+  text-align: center;
+}

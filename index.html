@@ -8,13 +8,13 @@
   <title>Arkanoid</title>
 </head>
 <body>
-  <section class="options-and-rules container hide">
+  <section class="options-and-rules container ">
     <div class="rules">
       <h1 class="rules__header header">Rules:</h1>
       <ol class="rules__text">
         <li>Set the number of health points and the level at which the complication will begin.</li>
         <li>Some bricks need to be attacked multiple times before they are destroyed.</li>
-        <li>The platform is controlled by arrows on the keyboard. Press the space bar to make the ball move</li>
+        <li>The platform is controlled by arrows on the keyboard. Press the space bar to make the ball move.</li>
       </ol>
     </div>
     <div class="options-and-rules__options">
@@ -22,17 +22,17 @@
       <div class="options">
         <div class="options-health">
           <p class="options-health__text">Health points</p>
-          <input class="options-health__number options-input" type="number" value="3" min="1" max="5">
+          <input class="options-health__number options-input" type="number" value="3" min="2" max="5">
         </div>
         <div class="options-level">
-          <p class="options-level__text">Level complication</p>
+          <p class="options-level__text">Advanced level</p>
           <input class="options-level__number options-input" type="number" value="3" min="1" max="10">
         </div>
       </div>
     </div>
     <button class="options-and-rules__button button">start game</button>
   </section>
-  <section class="game">
+  <section class="game hide">
     <div class="skore-and-heals">
       <p class="score-and-health__info"><span class="score"></span></p>
       <p class="score-and-health__info"><span class="health"></span></p>
@@ -49,13 +49,13 @@
     </div>
   </section>
   <section class="restart container hide">
+    <h2 class="game-over">Game over</h2>
     <div class="result">
-      <p class="completed-levels">Completed levels: <span class="number-of-levels"></span></p>
+      <p class="completed-levels">Levels: <span class="number-of-levels"></span></p>
       <p class="points-earned">Points earned: <span class="number-of-points"></span></p>
     </div>
     <button class="restart__button button">restart game</button>
   </section>
-
   <script src="/index.js"></script>
 </body>
 </html>
