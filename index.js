@@ -58,23 +58,21 @@ function createGameBlock() {
   
   const ballDiameter = ballInfo.height;
 
-  let posX = ballInfo.left + ballDiameter/2; // позиция по x - центр шара
-  let posY = ballInfo.top; // позиция по Y - верх шара
-  let ballBottomSide = posY + ballInfo.height;
+  let posX = ballInfo.left + ballDiameter/2;
+  let posY = ballInfo.top;
+  // let ballBottomSide = posY + ballInfo.height;
 
   
   const platformWidth = platformInfo.width;
   const platformHeight = platformInfo.height; 
   let platformPosX = platformInfo.left; 
-  const vPlatform = 10;
+  const vPlatform = 15;
   
   // создание группы блоков внутри тега blocks
   
   function renderBlocks () {
-    const createBlocks = (i, j, color, id) => {
-      return `
-        <div class="block-row-${i} block-column-${j} block-${color} block"></div>
-      `
+    const createBlocks = (i, j, color) => {
+      return `<div class="block-row-${i} block-column-${j} block-${color} block"></div>`;
     };
     
     for (let i = 1; i < 21; i++) {
@@ -152,36 +150,8 @@ function createGameBlock() {
   // механика перемещения шара в пространстве и контакта соприкосновения с границами и блоками
   
   function moveBall () { 
-    posX += vx; // тут нужно допилить случайное присвоение начального вектора направления движения + либо - при первом запуске(попробывать сделать это в ф-ии старт)
+    posX += vx; 
     posY += vy;
-    
-    function contactWithBlock() {
-      Object.values(block).map((elem) => {
-        let elemTop = elem.getBoundingClientRect().top;
-        let elemBottom = elem.getBoundingClientRect().top + elem.getBoundingClientRect().height;
-        let elemLeft = elem.getBoundingClientRect().left;
-        let elemRight = elem.getBoundingClientRect().left + elem.getBoundingClientRect().width;
-
-
-        if (posY + ballDiameter/4 < elemBottom && posX > elemLeft && posX < elemRight) {
-          removeBlock(elem);
-          vy = -vy;
-        };
-        if (posX + ballDiameter > elemLeft && posX < elemRight && posY + ballDiameter/2  > elemTop && posY + ballDiameter/2 < elemBottom) {
-          removeBlock(elem);
-          vx = -vx;
-        };
-        if (posX - ballDiameter/2 < elemRight && posX > elemLeft && posY + ballDiameter/2 > elemTop && posY + ballDiameter/2 < elemBottom) {
-          removeBlock(elem);
-          vx = -vx;
-        };
-         if (ballBottomSide > elemTop && ballBottomSide < elemBottom && posX > elemLeft && posX < elemRight) {
-          removeBlock(elem);
-          vy = -vy;
-        };
-      });
-    };
-    contactWithBlock();
 
     //взаимодействие со стенами и платформой
 
@@ -198,7 +168,7 @@ function createGameBlock() {
       vx = -vx;
     };
     if (posY > bottomWall - platformHeight - ballDiameter) {
-      if (posX >= platformPosX && posX <= platformPosX + platformInfo.width) {
+      if (posX >= platformPosX - ballDiameter && posX <= platformPosX + platformInfo.width) {
         posY = bottomWall - platformHeight - ballDiameter;
         vy = -vy;
       };
@@ -211,6 +181,35 @@ function createGameBlock() {
     if (posY + ballDiameter > bottomWall) {
       death();
     };
+
+    // взаимодействие с блоками
+
+    function contactWithBlock() {
+      Object.values(block).map((elem) => {
+        let elemTop = elem.getBoundingClientRect().top;
+        let elemBottom = elem.getBoundingClientRect().top + elem.getBoundingClientRect().height;
+        let elemLeft = elem.getBoundingClientRect().left;
+        let elemRight = elem.getBoundingClientRect().left + elem.getBoundingClientRect().width;
+
+        if (posY + ballDiameter/4 < elemBottom && posY > elemTop && posX > elemLeft && posX < elemRight) {
+          removeBlock(elem);
+          vy = -vy;
+        };
+        if (posX + ballDiameter + ballDiameter/4 > elemLeft && posX < elemRight && posY + ballDiameter/2  > elemTop && posY + ballDiameter/2 < elemBottom) {
+          removeBlock(elem);
+          vx = -vx;
+        };
+        if (posX - ballDiameter/2 < elemRight && posX > elemLeft && posY + ballDiameter/2 > elemTop && posY + ballDiameter/2 < elemBottom) {
+          removeBlock(elem);
+          vx = -vx;
+        };
+         if (posY + ballDiameter/2 + ballInfo.height > elemTop && posY + ballInfo.height < elemBottom && posX > elemLeft && posX < elemRight) {
+          removeBlock(elem);
+          vy = -vy;
+        };
+      });
+    };
+    contactWithBlock();
   
     // если закончились блоки, создать новую группу блоков и перейти на следующий уровень 
   
@@ -272,9 +271,9 @@ function createGameBlock() {
       shellsWidth = shells.getBoundingClientRect().width;
     };
 
-    // механика движения блоков
+    // механика движения снарядов
 
-    const intervalShellsMove = setInterval(shellsMove, 1000/50);
+    setInterval(shellsMove, 1000/50);
     function shellsMove() {
       shellsY += vShellsY;
       if (shells) {
@@ -290,7 +289,7 @@ function createGameBlock() {
         shellsY = 0;
         shells.remove();
         death();
-      }
+      };
     };
   };
   
@@ -323,8 +322,6 @@ function createGameBlock() {
   // окончание игры и вывод результатов
 
   function gameOver() {
-    ball.style.top = bottomWall - platformHeight - ballDiameter + 'px';
-    ball.style.left = platformPosX + 'px';
     clearInterval(intervalMove);
     clearInterval(intervalGenerateShells);
     document.removeEventListener('keydown', movePlatform);
@@ -340,5 +337,5 @@ function createGameBlock() {
 // кнопка перезапуска игры
 
 restartButton.addEventListener('click', () => {
-  location.reload()
+  location.reload();
 });
