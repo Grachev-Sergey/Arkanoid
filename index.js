@@ -11,8 +11,6 @@ let difficultLevel;
 let setHealth;
 
 let isGameStarted = false;
-let isPlatformMove = false;
-let startTime = new Date().getTime();
 
 let score = 0;
 let level = 1;
@@ -38,8 +36,8 @@ function createGameBlock() {
   const bottomWall = document.querySelector('.rightWall').getBoundingClientRect().height;
   const blocks = document.querySelector('.blocks');
 
-  const platform = document.querySelector('.platform');
-  const platformInfo = platform.getBoundingClientRect();
+  let platform = document.querySelector('.platform');
+  let platformInfo = platform.getBoundingClientRect();
 
   const ball = document.querySelector('.ball');
   const ballInfo = ball.getBoundingClientRect();
@@ -53,6 +51,7 @@ function createGameBlock() {
   scoreNumber.innerHTML = `Score: ${score}`;
 
   let intervalMoveBall;
+  let intervalMovePlatform; 
   
   let ballSpeedX = 4, ballSpeedY = -4;
 
@@ -114,6 +113,7 @@ function createGameBlock() {
   function startGame() {
     isGameStarted = true;
     intervalMoveBall = requestAnimationFrame(moveBall);
+    fallGift();
     if (level >= difficultLevel) {
       fallShells();
     }
@@ -121,104 +121,121 @@ function createGameBlock() {
 
   function movePlatform(event) {
     if (event.key === 'ArrowLeft') {
-      isPlatformMove = true;
-      let startTime = new Date().getTime();
       movePlatformlLeft();
-
     }
     if (event.key === 'ArrowRight') {
-      isPlatformMove = true;
-      let startTime = new Date().getTime();
       movePlatformRight();
-    }
-    if (platformPosX < leftWall) {
-      platformPosX = leftWall;
-    }
-    if (platformPosX + platformWidth > rightWall) {
-      platformPosX = rightWall - platformWidth;
-        platform.style.left = `${platformPosX}px`;
     }
   };
 
   function movePlatformWihtBall(event) {
     if (event.key === 'ArrowLeft') {
-      let startTime = new Date().getTime();
-      isPlatformMove = true;
       movePlatformWihtBallLeft();
     }
     if (event.key === 'ArrowRight') {
-      let startTime = new Date().getTime();
-      isPlatformMove = true;
       movePlatformWihtBallRight();
-    }
-    if (platformPosX < leftWall) {
-      platformPosX = leftWall;
-      ballPosX = platformPosX + platformWidth / 2 - leftWall;
-    }
-    if (platformPosX + platformWidth + rightWallWidth > rightWall) {
-      platformPosX = rightWall - rightWallWidth - platformWidth;
-      ballPosX = rightWall - rightWallWidth - platformWidth / 2;
-      platform.style.left = `${platformPosX}px`;
-      ball.style.left = `${ballPosX}px`;
     }
   };
 
   function movePlatformlLeft () {
-    if(isPlatformMove){
-      let currentTime = new Date().getTime()
-      let timeFraction = (currentTime - startTime) / 1000;
-      platformPosX -= platformSpeed + timeFraction;
-      if (timeFraction > 1) timeFraction = 1;
-      if (timeFraction < 1) {
-        requestAnimationFrame(movePlatformlLeft);
+    let start = Date.now()
+    let interval = setInterval(move, 15);
+    function move() {
+      let timePassed = Date.now() - start;
+      if (timePassed >= 375) {
+        clearInterval(interval)
       }
+      platformPosX -= 1;
       platform.style.left = `${platformPosX}px`;
-      ball.style.left = `${ballPosX}px`;
-    }
+      platform = document.querySelector('.platform');
+      platformInfo = platform.getBoundingClientRect();
+      platformPosX = platformInfo.left;
+      if (platformPosX < leftWall) {
+        platformPosX = leftWall;
+        platform.style.left = `${platformPosX}px`;
+      }
+    };
   };
 
   function movePlatformRight () {
-    let currentTime = new Date().getTime()
-    let timeFraction = (currentTime - startTime) / 1000;
-    platformPosX += platformSpeed + timeFraction;
-    if (timeFraction > 1) timeFraction = 1;
-    if (timeFraction < 1) {
-      requestAnimationFrame(movePlatformlLeft);
-    }
-    platform.style.left = `${platformPosX}px`;
-    ball.style.left = `${ballPosX}px`;
+    let start = Date.now()
+    let interval = setInterval(move, 15);
+    function move() {
+      let timePassed = Date.now() - start;
+      if (timePassed >= 375) {
+        clearInterval(interval)
+      }
+      platformPosX += 1;
+      platform.style.left = `${platformPosX}px`;
+      platform = document.querySelector('.platform');
+      platformInfo = platform.getBoundingClientRect();
+      const platformWidth = platformInfo.width;
+      platformPosX = platformInfo.left;
+      if (platformPosX + platformWidth > rightWall) {
+        platformPosX = rightWall - platformWidth;
+        platform.style.left = `${platformPosX}px`;
+      }
+    };
   };
 
 
   function movePlatformWihtBallLeft () {
-    let currentTime = new Date().getTime()
-    let timeFraction = (currentTime - startTime) / 1000;
-    platformPosX -= platformSpeed + timeFraction;
-    ballPosX -= platformSpeed + timeFraction;
-    if (timeFraction > 1) timeFraction = 1;
-    if (timeFraction < 1) {
-      requestAnimationFrame(movePlatformWihtBallLeft);
-    }
-    platform.style.left = `${platformPosX}px`;
-    ball.style.left = `${ballPosX}px`;
+    let start = Date.now()
+    let interval = setInterval(move, 15);
+    function move() {
+      let timePassed = Date.now() - start;
+      if (timePassed >= 375) {
+        clearInterval(interval)
+      }
+      platformPosX -= 1;
+      ballPosX -= 1;
+      platform.style.left = `${platformPosX}px`;
+      ball.style.left = `${ballPosX}px`;
+      platform = document.querySelector('.platform');
+      platformInfo = platform.getBoundingClientRect();
+      const platformWidth = platformInfo.width;
+      platformPosX = platformInfo.left;
+      if (platformPosX < leftWall) {
+        platformPosX = leftWall;
+        ballPosX = platformPosX + platformWidth / 2 - leftWall;
+        platform.style.left = `${platformPosX}px`;
+        ball.style.left = `${ballPosX}px`;
+      }
+    }  
   };
+
 
   function movePlatformWihtBallRight () {
-    let currentTime = new Date().getTime()
-    let timeFraction = (currentTime - startTime) / 1000;
-    platformPosX += platformSpeed + timeFraction;
-    ballPosX += platformSpeed + timeFraction;
-    if (timeFraction > 1) timeFraction = 1;
-    if (timeFraction < 1) {
-      requestAnimationFrame(movePlatformWihtBallRight);
-    }
-    platform.style.left = `${platformPosX}px`;
-    ball.style.left = `${ballPosX}px`;
+    let start = Date.now()
+    let interval = setInterval(move, 15);
+    function move() {
+      let timePassed = Date.now() - start;
+      if (timePassed >= 375) {
+        clearInterval(interval)
+      }
+      platformPosX += 1;
+      ballPosX += 1;
+      platform.style.left = `${platformPosX}px`;
+      ball.style.left = `${ballPosX}px`;
+      platform = document.querySelector('.platform');
+      platformInfo = platform.getBoundingClientRect();
+      const platformWidth = platformInfo.width;
+      platformPosX = platformInfo.left;
+      if (platformPosX + platformWidth + rightWallWidth > rightWall) {
+        platformPosX = rightWall - rightWallWidth - platformWidth;
+        ballPosX = rightWall - rightWallWidth - platformWidth / 2;
+        platform.style.left = `${platformPosX}px`;
+        ball.style.left = `${ballPosX}px`;
+      }
+    };
   };
 
-  function handleKeyUp() {
-    let isPlatforMove = false;
-  };
+  // function updatePlatformInfo () {
+  //   platform = document.querySelector('.platform');
+  //   platformInfo = platform.getBoundingClientRect();
+  //   const platformWidth = platformInfo.width;
+  //   platformPosX = platformInfo.left;
+  // }
 
   // механика перемещения шара в пространстве и контакта соприкосновения с границами и блоками
 
@@ -370,11 +387,85 @@ function createGameBlock() {
     };
   };
 
+  // механика падения подарков 
+
+  let intervalGenerateGift;
+
+  function fallGift() {
+
+    intervalGenerateGift = setInterval(generateGift, 5000);
+
+    const giftBlock = document.querySelector('.gift-block');
+
+    let gift;
+    let giftPosY;
+    let giftPosX;
+    let giftHeight;
+    let giftWidth;
+    const giftSpeedY = 8;
+
+    function generateGift() {
+      let giftRandomPosishon = giftPosishon(5, 95);
+      giftBlock.innerHTML += `<div class = "gift" style = "left: ${giftRandomPosishon}%"></div>`;
+      function giftPosishon(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+      };
+      gift = giftBlock.querySelector('.gift');
+      giftPosY = gift.getBoundingClientRect().top;
+      giftPosX = gift.getBoundingClientRect().left;
+      giftHeight = gift.getBoundingClientRect().height;
+      giftWidth = gift.getBoundingClientRect().width;
+    };
+
+  // механика движения подарков
+
+    setInterval(giftMove, 20);
+    function giftMove() {
+      giftPosY += giftSpeedY;
+      if (gift) {
+        gift.style.top = `${giftPosY}px`;
+      }
+
+      platform = document.querySelector('.platform');
+      platformInfo = platform.getBoundingClientRect();
+      const platformWidth = platformInfo.width;
+      platformPosX = platformInfo.left;
+
+      if (giftPosY + giftHeight > bottomWall) {
+        gift.remove();
+        giftPosX = 0;
+        giftPosY = 0;
+      }
+      if (giftPosY + giftHeight > bottomWall - platformHeight && giftPosX > platformPosX && giftPosX + giftWidth < platformPosX + platformWidth) {
+        giftPosX = 0;
+        giftPosY = 0;
+        gift.remove();
+        applyBonus();
+      }
+    };
+    
+    // механика случайного бонуса
+
+    function applyBonus() {
+      platform.style.width = `${randomBonus(3, 30)}%`
+      function randomBonus(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+      };
+    };
+  };
+
   // остановка игры 
 
   function stopGame() {
     isGameStarted = false;
     clearInterval(intervalGenerateShells);
+    clearInterval(intervalGenerateGift);
+
+    platform = document.querySelector('.platform');
+    platformInfo = platform.getBoundingClientRect();
+    const platformWidth = platformInfo.width;
+    platformPosX = platformInfo.left;
+
     ballPosX = platformPosX + platformWidth / 2;
     ballPosY = bottomWall - platformHeight - ballDiameter;
     ball.style.top = `${ballPosY}px`;
@@ -405,7 +496,6 @@ function createGameBlock() {
   };
 
   document.addEventListener('keydown', handleKeyDown);
-  document.addEventListener('keyup', handleKeyUp);
 };
 
 // кнопка перезапуска игры

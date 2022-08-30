@@ -143,6 +143,19 @@ li {
   background-color: yellow;
 }
 
+.gift-block {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.gift {
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  background-color: white;
+}
+
 .ball {
   position: absolute;
   top: 760px;
