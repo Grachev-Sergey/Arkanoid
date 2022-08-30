@@ -11,6 +11,8 @@ let difficultLevel;
 let setHealth;
 
 let isGameStarted = false;
+let isPlatformMove = false;
+let startTime = new Date().getTime();
 
 let score = 0;
 let level = 1;
@@ -50,8 +52,8 @@ function createGameBlock() {
 
   scoreNumber.innerHTML = `Score: ${score}`;
 
-  let intervalMove;
-
+  let intervalMoveBall;
+  
   let ballSpeedX = 4, ballSpeedY = -4;
 
   const ballDiameter = ballInfo.height;
@@ -63,13 +65,13 @@ function createGameBlock() {
   const platformWidth = platformInfo.width;
   const platformHeight = platformInfo.height;
   let platformPosX = platformInfo.left;
-  const platformSpeed = 15;
+  const platformSpeed = 10;
 
   // выбор фунцкии для события
 
   function handleKeyDown(event) {
     if (!isGameStarted && event.key === ' ') {
-      startGame(event);
+      startGame();
     }
     if (!isGameStarted && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
       movePlatformWihtBall(event);
@@ -109,42 +111,45 @@ function createGameBlock() {
 
   // запуск игры, функционал движения мяча и платформы
 
-  function startGame(event) {
+  function startGame() {
     isGameStarted = true;
-
-    // intervalMove = setInterval(moveBall, 20); // заменю интервал на requestAnimationFrame
-    intervalMove = requestAnimationFrame(moveBall);
-
+    intervalMoveBall = requestAnimationFrame(moveBall);
     if (level >= difficultLevel) {
       fallShells();
     }
-    
   };
 
   function movePlatform(event) {
     if (event.key === 'ArrowLeft') {
-      platformPosX -= platformSpeed;
+      isPlatformMove = true;
+      let startTime = new Date().getTime();
+      movePlatformlLeft();
+
     }
     if (event.key === 'ArrowRight') {
-      platformPosX += platformSpeed;
+      isPlatformMove = true;
+      let startTime = new Date().getTime();
+      movePlatformRight();
     }
     if (platformPosX < leftWall) {
       platformPosX = leftWall;
     }
     if (platformPosX + platformWidth > rightWall) {
       platformPosX = rightWall - platformWidth;
+        platform.style.left = `${platformPosX}px`;
     }
-    platform.style.left = `${platformPosX}px`;
   };
 
   function movePlatformWihtBall(event) {
     if (event.key === 'ArrowLeft') {
-      platformPosX -= platformSpeed;
-      ballPosX -= platformSpeed;
+      let startTime = new Date().getTime();
+      isPlatformMove = true;
+      movePlatformWihtBallLeft();
     }
     if (event.key === 'ArrowRight') {
-      platformPosX += platformSpeed;
-      ballPosX += platformSpeed;
+      let startTime = new Date().getTime();
+      isPlatformMove = true;
+      movePlatformWihtBallRight();
     }
     if (platformPosX < leftWall) {
       platformPosX = leftWall;
@@ -153,9 +158,66 @@ function createGameBlock() {
     if (platformPosX + platformWidth + rightWallWidth > rightWall) {
       platformPosX = rightWall - rightWallWidth - platformWidth;
       ballPosX = rightWall - rightWallWidth - platformWidth / 2;
+      platform.style.left = `${platformPosX}px`;
+      ball.style.left = `${ballPosX}px`;
+    }
+  };
+
+  function movePlatformlLeft () {
+    if(isPlatformMove){
+      let currentTime = new Date().getTime()
+      let timeFraction = (currentTime - startTime) / 1000;
+      platformPosX -= platformSpeed + timeFraction;
+      if (timeFraction > 1) timeFraction = 1;
+      if (timeFraction < 1) {
+        requestAnimationFrame(movePlatformlLeft);
+      }
+      platform.style.left = `${platformPosX}px`;
+      ball.style.left = `${ballPosX}px`;
+    }
+  };
+
+  function movePlatformRight () {
+    let currentTime = new Date().getTime()
+    let timeFraction = (currentTime - startTime) / 1000;
+    platformPosX += platformSpeed + timeFraction;
+    if (timeFraction > 1) timeFraction = 1;
+    if (timeFraction < 1) {
+      requestAnimationFrame(movePlatformlLeft);
     }
     platform.style.left = `${platformPosX}px`;
     ball.style.left = `${ballPosX}px`;
+  };
+
+
+  function movePlatformWihtBallLeft () {
+    let currentTime = new Date().getTime()
+    let timeFraction = (currentTime - startTime) / 1000;
+    platformPosX -= platformSpeed + timeFraction;
+    ballPosX -= platformSpeed + timeFraction;
+    if (timeFraction > 1) timeFraction = 1;
+    if (timeFraction < 1) {
+      requestAnimationFrame(movePlatformWihtBallLeft);
+    }
+    platform.style.left = `${platformPosX}px`;
+    ball.style.left = `${ballPosX}px`;
+  };
+
+  function movePlatformWihtBallRight () {
+    let currentTime = new Date().getTime()
+    let timeFraction = (currentTime - startTime) / 1000;
+    platformPosX += platformSpeed + timeFraction;
+    ballPosX += platformSpeed + timeFraction;
+    if (timeFraction > 1) timeFraction = 1;
+    if (timeFraction < 1) {
+      requestAnimationFrame(movePlatformWihtBallRight);
+    }
+    platform.style.left = `${platformPosX}px`;
+    ball.style.left = `${ballPosX}px`;
+  };
+
+  function handleKeyUp() {
+    let isPlatforMove = false;
   };
 
   // механика перемещения шара в пространстве и контакта соприкосновения с границами и блоками
@@ -167,7 +229,6 @@ function createGameBlock() {
     if(isGameStarted) {
       requestAnimationFrame(moveBall);
     }
-  
 
     //взаимодействие со стенами и платформой
 
@@ -207,19 +268,19 @@ function createGameBlock() {
         const elemLeft = elem.getBoundingClientRect().left;
         const elemRight = elem.getBoundingClientRect().left + elem.getBoundingClientRect().width;
 
-        if (ballPosY + ballDiameter / 4 < elemBottom && ballPosY > elemTop && ballPosX > elemLeft && ballPosX < elemRight) {
+        if (ballPosY + ballDiameter / 4 <= elemBottom && ballPosY > elemTop && ballPosX > elemLeft && ballPosX < elemRight) {
           removeBlock(elem);
           ballSpeedY = -ballSpeedY;
         }
-        if (ballPosX + ballDiameter + ballDiameter / 4 > elemLeft && ballPosX < elemRight && ballPosY + ballDiameter / 2 > elemTop && ballPosY + ballDiameter / 2 < elemBottom) {
+        if (ballPosX + ballDiameter + ballDiameter / 4 >= elemLeft && ballPosX <= elemRight && ballPosY + ballDiameter / 2 > elemTop && ballPosY + ballDiameter / 2 < elemBottom) {
           removeBlock(elem);
           ballSpeedX = -ballSpeedX;
         }
-        if (ballPosX - ballDiameter / 2 < elemRight && ballPosX > elemLeft && ballPosY + ballDiameter / 2 > elemTop && ballPosY + ballDiameter / 2 < elemBottom) {
+        if (ballPosX - ballDiameter / 2 <= elemRight && ballPosX >= elemLeft && ballPosY + ballDiameter / 2 > elemTop && ballPosY + ballDiameter / 2 < elemBottom) {
           removeBlock(elem);
           ballSpeedX = -ballSpeedX;
         }
-        if (ballPosY + ballDiameter / 2 + ballInfo.height > elemTop && ballPosY + ballInfo.height < elemBottom && ballPosX > elemLeft && ballPosX < elemRight) {
+        if (ballPosY + ballDiameter / 2 + ballInfo.height >= elemTop && ballPosY + ballInfo.height <= elemBottom && ballPosX > elemLeft && ballPosX < elemRight) {
           removeBlock(elem);
           ballSpeedY = -ballSpeedY;
         }
@@ -313,8 +374,6 @@ function createGameBlock() {
 
   function stopGame() {
     isGameStarted = false;
-    // clearInterval(intervalMove);
-
     clearInterval(intervalGenerateShells);
     ballPosX = platformPosX + platformWidth / 2;
     ballPosY = bottomWall - platformHeight - ballDiameter;
@@ -346,6 +405,7 @@ function createGameBlock() {
   };
 
   document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup', handleKeyUp);
 };
 
 // кнопка перезапуска игры
